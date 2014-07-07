@@ -10,10 +10,12 @@ use strict;
 use warnings;
 use 5.010;
 use Getopt::Long qw(:config no_ignore_case);
+use Term::Cap;
+use POSIX;
 my $mafft  = '/usr/bin/mafft';
 my $prefix = int( rand(99999) );
 my %opts;
-GetOptions( 'a|align' => \$opts{'a'}, 'h|help' => \$opts{'h'}, 'f|file=s' => \$opts{'f'} )
+GetOptions( 'a|align' => \$opts{'a'}, 'h|help' => \$opts{'h'}, 'f|file=s' => \$opts{'f'}, 'i|integer_ids' => \$opts{'i'} )
   or die("Error in command line arguments\n");
 my $infile = $opts{'f'};
 
@@ -22,11 +24,12 @@ if ( $opts{'h'} ) {
 	exit;
 }
 if ( !$infile ) {
-	say "Usage: xmfa2fasta --file <XMFA filename>";
+	say "Usage: xmfa2fasta.pl --file <XMFA filename>";
+	say "See xmfa2fasta.pl --help for more options.";
 	exit 1;
 }
 my $seqs = {};
-my @ids;
+my ( @ids, @int_ids );
 my $temp_seq;
 my $current_id = '';
 open( my $fh, '<', $infile ) or die "Cannot open file $infile\n";
@@ -40,7 +43,16 @@ while ( my $line = <$fh> ) {
 	}
 	if ( $line =~ /^>\s*([\d\w\s\|\-\\\/\.\(\)]+):/ ) {
 		$seqs->{$current_id}->{$locus} = $temp_seq if defined $current_id;
-		$current_id = $1;
+		if ( $opts{'i'} ) {
+			my $extracted_id = $1;
+			if ( $extracted_id =~ /^(\d+)/ ) {
+				$current_id = $1;
+			} else {
+				die "Invalid identifier with --integer_ids options\n";
+			}
+		} else {
+			$current_id = $1;
+		}
 		if ( !$seqs->{$current_id} ) {
 			push @ids, $current_id;
 		}
@@ -56,6 +68,7 @@ if ( $opts{'a'} ) {
 	my $in_file      = "$prefix.fas";
 	my $aligned_file = "$prefix\_aligned.fas";
 	my $aligned_seqs = {};
+	my %int_id_used;
 	foreach my $locus ( 0 .. $locus_count - 1 ) {
 		open( my $fh, '>', $in_file ) || die "Can't write temp file.\n";
 		foreach my $id (@ids) {
@@ -69,7 +82,17 @@ if ( $opts{'a'} ) {
 		open( my $fh_in, '<', $aligned_file ) || die "Can't open aligned file.\n";
 		while ( my $line = <$fh_in> ) {
 			if ( $line =~ /^>\s*([\d\w\s\|\-\\\/\.\(\)]+)$/ ) {
-				my $new_id = $1;
+				my $new_id;
+				if ( $opts{'i'} ) {
+					my $extracted_id = $1;
+					if ( $extracted_id =~ /^(\d+)/ ) {
+						$new_id = $1;
+					} else {
+						die "Invalid identifier with --integer_ids options\n";
+					}
+				} else {
+					$new_id = $1;
+				}
 				chomp $new_id;
 				if ($seq) {
 					$seq =~ s/[\r\n]//g;
@@ -93,6 +116,9 @@ foreach my $id (@ids) {
 	say ">$id";
 	my $seq;
 	foreach my $locus ( 0 .. $locus_count - 1 ) {
+		if (!defined $seqs->{$id}->{$locus}){
+			die "No sequence data for $id:locus $locus.\n";
+		}
 		$seq .= $seqs->{$id}->{$locus};
 	}
 	$seq = line_split($seq);
@@ -109,20 +135,40 @@ sub line_split {
 }
 
 sub show_help {
+	my $termios = POSIX::Termios->new;
+	$termios->getattr;
+	my $ospeed = $termios->getospeed;
+	my $t = Tgetent Term::Cap { TERM => undef, OSPEED => $ospeed };
+	my ( $norm, $bold, $under ) = map { $t->Tputs( $_, 1 ) } qw/me md us/;
 	say << "HELP";
+${bold}NAME$norm
+    ${bold}xmfa2fasta.pl$norm - Convert XMFA file to FASTA file
+    
+${bold}SYNOPSIS$norm
+    ${bold}xmfa2fasta.pl --file ${under}XMFA_FILE$norm [${under}options$norm]
+    
+    Output is directed to STDOUT.  Usually you will want to create a new
+    FASTA file so direct output to the new file, e.g.
+    
+    ${bold}xmfa2fasta.pl --file ${under}XMFA_FILE$norm [${under}options$norm] >  ${bold}${under}FASTA_FILE$norm
 
-Usage xmfa2fasta --file <XMFA file>
-
-Options
--------
--a             Align locus blocks before concatenating.
---align
-
--f <file>      XMFA file.
---file
-
--h             This help page.
---help
+${bold}OPTIONS$norm
+${bold}-a, --align$norm
+    Align locus blocks before concatenating.
+    
+${bold}-f, --file$norm ${under}FILE$norm  
+    XMFA file.
+    
+${bold}-h, --help$norm
+    This help page.    
+    
+${bold}-i, --integer_ids$norm
+    Use integer at beginning of identifier for sorting.
+    
+    This strips off any characters after the first non-integer character of
+    the identifiers.  This can be used to resolve problems caused by
+    truncation of names in other algorithms.  Identifiers must begin with
+    an integer to use this.
 HELP
 	return;
 }
