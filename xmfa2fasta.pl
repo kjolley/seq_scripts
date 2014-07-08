@@ -48,7 +48,7 @@ while ( my $line = <$fh> ) {
 			if ( $extracted_id =~ /^(\d+)/ ) {
 				$current_id = $1;
 			} else {
-				die "Invalid identifier with --integer_ids options\n";
+				die "Invalid identifier with --integer_ids option.\n";
 			}
 		} else {
 			$current_id = $1;
@@ -116,7 +116,7 @@ foreach my $id (@ids) {
 	say ">$id";
 	my $seq;
 	foreach my $locus ( 0 .. $locus_count - 1 ) {
-		if (!defined $seqs->{$id}->{$locus}){
+		if ( !defined $seqs->{$id}->{$locus} ) {
 			die "No sequence data for $id:locus $locus.\n";
 		}
 		$seq .= $seqs->{$id}->{$locus};
