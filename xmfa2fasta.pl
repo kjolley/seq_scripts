@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #Converts XMFA files to FASTA
 #Use the --align option to align individual locus blocks if an unaligned XMFA file is the source.
-#Written by Keith Jolley, 2010-2014
+#Written by Keith Jolley, 2010-2015
 #
 #Usage:
 #Output to STDOUT:     xmfa2fasta.pl [--align] --file <XMFA file>
@@ -41,7 +41,7 @@ while ( my $line = <$fh> ) {
 		$locus++;
 		next;
 	}
-	if ( $line =~ /^>\s*([\d\w\s\|\-\\\/\.\(\)]+):/ ) {
+	if ( $line =~ /^>\s*([\d\w\s\|\-\\\/\.\(\),]+):/ ) {
 		$seqs->{$current_id}->{$locus} = $temp_seq if defined $current_id;
 		if ( $opts{'i'} ) {
 			my $extracted_id = $1;
