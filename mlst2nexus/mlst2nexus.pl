@@ -4,7 +4,7 @@
 #
 #Usage:
 #Output to STDOUT:     mlst2nexus.pl --file <TSV file>
-#Output to FASTA file: mlst2nexus.pl --file <TSV file> > <NEXUS file>
+#Output to Nexus file: mlst2nexus.pl --file <TSV file> > <NEXUS file>
 
 use strict;
 use warnings;
@@ -28,7 +28,7 @@ foreach my $line (@profilelist) {
 		push @cleanedprofiles, $line;
 		$i++;
 		my @data = split /\s+/x, $line;
-		if ( $i > 1 && scalar @data != $lastcols ) {
+		if ( $i > 1 && @data != $lastcols ) {
 			$badentry = 1;
 		}
 		$lastcols = scalar @data;
@@ -71,7 +71,7 @@ for my $i ( 0 .. @cleanedprofiles - 1 ) {
 	$matrix .= "$profile[0]";
 	for my $j ( 0 .. $i - 1 ) {
 		my $matches = profile_match( $cleanedprofiles[$i], $cleanedprofiles[$j] );
-		my $dist = decimal_place( 1 - ($matches) / ( scalar @profile - 1 ), 3 );
+		my $dist = decimal_place( 1 - ($matches) / ( @profile - 1 ), 3 );
 		$matrix .= "\t$dist";
 	}
 	$matrix .= "\t0\n";
