@@ -1,6 +1,5 @@
 #!/usr/bin/perl
 #Converts MLST TSV files to Nexus for loading into SplitsTree
-#Use the --align option to align individual locus blocks if an unaligned XMFA file is the source.
 #Written by Keith Jolley, 2015
 #
 #Usage:
