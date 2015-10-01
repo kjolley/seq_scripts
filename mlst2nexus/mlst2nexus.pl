@@ -3,8 +3,8 @@
 #Written by Keith Jolley, 2015
 #
 #Usage:
-#Output to STDOUT:     mlst2nexus.pl --file <TSV file>
-#Output to Nexus file: mlst2nexus.pl --file <TSV file> > <NEXUS file>
+#Output to STDOUT:     mlst2nexus.pl <TSV file>
+#Output to Nexus file: mlst2nexus.pl <TSV file> > <NEXUS file>
 
 use strict;
 use warnings;
