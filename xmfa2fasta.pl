@@ -52,7 +52,7 @@ sub main {
 			$locus++;
 			next;
 		}
-		if ( $line =~ /^>\s*([\d\w\s\|\-\\\/\.\(\),#=\*\!\%]+):/ ) {
+		if ( $line =~ /^>\s*([\d\w\s\|\-\\\/\.\(\),#=\*\!\%']+):/ ) {
 			$seqs->{$current_id}->{$locus} = $temp_seq if defined $current_id;
 			if ( $opts{'i'} ) {
 				my $extracted_id = $1;
@@ -92,7 +92,7 @@ sub main {
 			my $seq;
 			open( my $fh_in, '<', $aligned_file ) || die "Can't open aligned file.\n";
 			while ( my $line = <$fh_in> ) {
-				if ( $line =~ /^>\s*([\d\w\s\|\-\\\/\.\(\),#=\*\!\%]+)$/ ) {
+				if ( $line =~ /^>\s*([\d\w\s\|\-\\\/\.\(\),#=\*\!\%']+)$/ ) {
 					my $new_id;
 					if ( $opts{'i'} ) {
 						my $extracted_id = $1;
