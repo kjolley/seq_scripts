@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>Non-redundant databases (NRDB)</title>
+<meta name="viewport" content="width=device-width" />
+<script src="nrdb.js" type="text/Javascript"></script>
+</head>
+<body>
+
+<h1>Non-redundant databases</h1>
+<p>This is a Javascript version of NRDB written by Keith Jolley. It was 
+inspired by the original NRDB written by Warren Gish.</p>
+<p>Paste in a FASTA file and any duplicate sequences will be identified 
+and a new FASTA output generated containing the non-redundant sequences. 
+You can choose to optionally renumber these.</p>
+<fieldset style="float:left"><legend>Paste in FASTA file</legend>
+<textarea name="sequence" id="sequence" rows="6" cols="70"></textarea>
+</fieldset>
+<fieldset style="float:left"><legend>Options</legend>
+<ul>
+<li><label><input type="checkbox" name="renumber" id="renumber" />
+Sequentially renumber</label></li>
+<li><label for="prefix">Prefix id with: </label>
+<input type="text" id="prefix" name="prefix" size="20" /></li>
+</ul>
+</fieldset>
+<fieldset style="float:left"><legend>Action</legend>
+<input type="submit" id="submit" name="submit" onclick="analyse()" value="Submit" />
+</fieldset>
+<div style="clear:both"></div>
+<div id="output"></div>
+
+</body>
+</html>
