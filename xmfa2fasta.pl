@@ -1,7 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #Converts XMFA files to FASTA
 #Use the --align option to align individual locus blocks if an unaligned XMFA file is the source.
-#Written by Keith Jolley, 2010-2015
+#Written by Keith Jolley, 2010-2020
+#License: GPL3.
 #
 #Usage:
 #Output to STDOUT:     xmfa2fasta.pl [--align] --file <XMFA file>
@@ -12,7 +13,9 @@ use 5.010;
 use Getopt::Long qw(:config no_ignore_case);
 use Term::Cap;
 use POSIX;
-my $mafft  = '/usr/bin/mafft';
+##############LOCAL CONFIGURATION##############
+my $mafft = '/usr/bin/mafft';
+###############################################
 my $prefix = int( rand(99999) );
 my %opts;
 GetOptions(
@@ -28,6 +31,14 @@ if ( $opts{'h'} ) {
 	show_help();
 	exit;
 }
+if ( $opts{'a'} ) {
+	if ( !-e $mafft ) {
+		die "MAFFT cannot be found at $mafft.\nPlease install or update path to program.\n";
+	}
+	if ( !-x $mafft ) {
+		die "The MAFFT ($mafft) program is not executable.\n";
+	}
+}
 if ( $opts{'m'} && length( $opts{'m'} ) > 1 ) {
 	die "Missing character can only be a single character\n";
 }
@@ -41,13 +52,13 @@ exit;
 
 sub main {
 	my $seqs = {};
-	my ( @ids, @int_ids );
+	my @ids;
 	my $temp_seq;
 	my $current_id = '';
 	open( my $fh, '<', $infile ) or die "Cannot open file $infile\n";
 	my $locus = 0;
 	while ( my $line = <$fh> ) {
-		if ( $line =~ /^=/ ) {
+		if ( $line =~ /^=/x ) {
 			$seqs->{$current_id}->{$locus} = $temp_seq if defined $current_id;
 			$locus++;
 			next;
@@ -56,7 +67,7 @@ sub main {
 			$seqs->{$current_id}->{$locus} = $temp_seq if defined $current_id;
 			if ( $opts{'i'} ) {
 				my $extracted_id = $1;
-				if ( $extracted_id =~ /^(\d+)/ ) {
+				if ( $extracted_id =~ /^(\d+)/x ) {
 					$current_id = $1;
 				} else {
 					die "Invalid identifier with --integer_ids option.\n";
@@ -69,7 +80,7 @@ sub main {
 			}
 			undef $temp_seq;
 		} else {
-			$line =~ s/[\r\n]//g;
+			$line =~ s/[\r\n]//gx;
 			$temp_seq .= $line;
 		}
 	}
@@ -79,24 +90,24 @@ sub main {
 		my $in_file      = "$prefix.fas";
 		my $aligned_file = "$prefix\_aligned.fas";
 		my $aligned_seqs = {};
-		my %int_id_used;
 		foreach my $locus ( 0 .. $locus_count - 1 ) {
-			open( my $fh, '>', $in_file ) || die "Can't write temp file.\n";
+			open( my $fh, '>', $in_file ) or die "Cannot write temp file.\n";
 			foreach my $id (@ids) {
 				say $fh ">$id";
 				say $fh $seqs->{$id}->{$locus};
 			}
 			close $fh;
-			system("$mafft --quiet --preservecase $in_file > $aligned_file");
+			system("$mafft --quiet --preservecase $in_file > $aligned_file") == 0
+			  or die "Failed to execute ${mafft}: $!";
 			my $id;
 			my $seq;
-			open( my $fh_in, '<', $aligned_file ) || die "Can't open aligned file.\n";
+			open( my $fh_in, '<', $aligned_file ) or die "Cannot open aligned file.\n";
 			while ( my $line = <$fh_in> ) {
-				if ( $line =~ /^>\s*(.+)$/ ) {
+				if ( $line =~ /^>\s*(.+)$/x ) {
 					my $new_id;
 					if ( $opts{'i'} ) {
 						my $extracted_id = $1;
-						if ( $extracted_id =~ /^(\d+)/ ) {
+						if ( $extracted_id =~ /^(\d+)/x ) {
 							$new_id = $1;
 						} else {
 							die "Invalid identifier with --integer_ids options\n";
@@ -106,7 +117,7 @@ sub main {
 					}
 					chomp $new_id;
 					if ($seq) {
-						$seq =~ s/[\r\n]//g;
+						$seq =~ s/[\r\n]//gx;
 						$aligned_seqs->{$id}->{$locus} = $seq;
 						undef $seq;
 					}
@@ -115,7 +126,7 @@ sub main {
 					$seq .= $line;
 				}
 			}
-			$seq =~ s/[\r\n]//g;
+			$seq =~ s/[\r\n]//gx;
 			$aligned_seqs->{$id}->{$locus} = $seq;
 			close $fh_in;
 		}
@@ -155,7 +166,7 @@ sub line_split {
 	my $newseq = '';
 	my $s;
 	$newseq .= "$s\n" while $s = substr $string, 0, 60, '';
-	$newseq =~ s/\n$//;
+	$newseq =~ s/\n$//x;
 	return $newseq;
 }
 
