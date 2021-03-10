@@ -69,7 +69,7 @@ sub read_fasta {
 			next;
 		}
 		die "Not valid FASTA format.\n" if !defined $header || length $header == 0;
-		$seqs->{$header} .= $line;
+		$seqs->{$header} .= uc($line);
 	}
 	foreach my $id ( keys %$seqs ) {
 		$seqs->{$id} =~ s/[^A-z\-\.]//gx;
