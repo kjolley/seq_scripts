@@ -32,24 +32,21 @@ sub main {
 				sequence            => encode_base64( $seqs->{$id} )
 			}
 		);
-		my $response = decode_json($client->POST( URI, $payload )->responseContent);
+		my $response = decode_json( $client->POST( URI, $payload )->responseContent );
 		print qq($id);
-		foreach my $field (qw(allele_id identity alignment mismatches gaps)){
+		foreach my $field (qw(allele_id identity alignment mismatches gaps)) {
 			my $value = $response->{'best_match'}->{$field} // q();
 			print qq(\t$value);
-			
 		}
-		my $species_list = $response->{'best_match'}->{'linked_data'}->{'rMLST genome database'}->{'species'};
+		my $species_list = $response->{'best_match'}->{'linked_data'}->{'rMLST genomes (uncurated)'}->{'species'};
 		my @list;
-		if ($species_list){
-			
-			foreach my $species (@$species_list){
-				push @list,qq($species->{'value'} (n=$species->{'frequency'}));
+		if ($species_list) {
+			foreach my $species (@$species_list) {
+				push @list, qq($species->{'value'} (n=$species->{'frequency'}));
 			}
 		}
 		local $" = q(; );
 		say qq(\t@list);
-
 	}
 	return;
 }
