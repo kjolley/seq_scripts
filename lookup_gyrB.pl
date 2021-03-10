@@ -17,6 +17,7 @@ use constant URI => 'https://rest.pubmlst.org/db/pubmlst_gyrB_seqdef_kiosk/loci/
 my $fasta_file = $ARGV[0];
 die "No FASTA filename provided.\n" if !defined $fasta_file;
 die "FASTA file '$fasta_file' does not exist.\n" if !-e $fasta_file;
+local $| = 1;
 main();
 
 sub main {
