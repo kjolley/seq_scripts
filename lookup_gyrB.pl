@@ -39,7 +39,7 @@ sub main {
 			my $value = $response->{'best_match'}->{$field} // q();
 			print qq(\t$value);
 		}
-		my $species_list = $response->{'best_match'}->{'linked_data'}->{'rMLST genomes (uncurated)'}->{'species'};
+		my $species_list = $response->{'best_match'}->{'linked_data'}->{'rMLST genome database'}->{'species'};
 		my @list;
 		if ($species_list) {
 			foreach my $species (@$species_list) {
